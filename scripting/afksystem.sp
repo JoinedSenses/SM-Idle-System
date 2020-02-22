@@ -81,13 +81,13 @@ void ResetValues(int client) {
 }
 
 void SetClientIdle(int client) {
-	if (client < 1 || client > MaxClients || !IsClientInGame(client)) {
+	if (client < 1 || client > MaxClients || !IsClientInGame(client)
+	|| IsClientSourceTV(client) || IsClientReplay(client)) {
 		return;
 	}
 
 	g_bIsClientIdle[client] = true;
 	g_iIdleStartTime[client] = GetGameTime();
-
 	
 	Call_StartForward(g_fwdOnClientIdle);
 	Call_PushCell(client);
@@ -95,9 +95,11 @@ void SetClientIdle(int client) {
 }
 
 void SetClientReturn(int client) {
-	if (client < 1 || client > MaxClients || !IsClientInGame(client)) {
+	if (client < 1 || client > MaxClients || !IsClientInGame(client)
+	|| IsClientSourceTV(client) || IsClientReplay(client)) {
 		return;
 	}
+
 
 	g_bIsClientIdle[client] = false;
 	g_iIdleStartTime[client] = 0;
@@ -124,11 +126,11 @@ int GetIdleTime(int client) {
 public any Native_IsClientIdle(Handle plugin, int numParams) {
 	int client = GetNativeCell(1);
 	if (client < 1 || client > MaxClients) {
-		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%d)", client);
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}
 
-	if (!IsClientConnected(client)) {
-		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not connected", client);
+	if (!IsClientConnected(client) || IsClientSourceTV(client) || IsClientReplay(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
 	}
 
 	return IsClientIdle(client);
@@ -137,11 +139,11 @@ public any Native_IsClientIdle(Handle plugin, int numParams) {
 public any Native_GetIdleTime(Handle plugin, int numParams) {
 	int client = GetNativeCell(1);
 	if (client < 1 || client > MaxClients) {
-		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%d)", client);
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}
 
-	if (!IsClientConnected(client)) {
-		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not connected", client);
+	if (!IsClientConnected(client) || IsClientSourceTV(client) || IsClientReplay(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
 	}
 
 	return GetIdleTime(client);
