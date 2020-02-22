@@ -16,16 +16,25 @@ public Plugin myinfo = {
 };
 
 bool g_bLateLoad;
+
 bool g_bIsClientIdle[MAXPLAYERS+1]; // Stores client idle state
 int g_iIdleStartTime[MAXPLAYERS+1]; // Stores GetGameTime()
 
+GlobalForward g_fwdOnClientIdle;
+GlobalForward g_fwdOnClientReturn;
+
+// ----------------------- SM Functions
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) {
 	g_bLateLoad = late;
-	
+
 	RegPluginLibrary("afksystem");
 
 	CreateNative("AFKS_IsClientIdle", Native_IsClientIdle);
 	CreateNative("AFKS_GetIdleTime", Native_GetIdleTime);
+
+	g_hOnClientIdle = new GlobalForward("AFKS_OnClientIdle", ET_Ignore, Param_Cell);
+	g_hOnClientReturn = new GlobalForward("AFKS_OnClientReturn", ET_Ignore, Param_Cell);
 }
 
 public void OnPluginStart() {
@@ -50,6 +59,8 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	return Plugin_Continue;
 }
 
+// ----------------------- Events
+
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 }
@@ -62,10 +73,76 @@ public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroad
 	int client = GetClientOfUserId(event.GetInt("userid"));
 }
 
-public any Native_IsClientIdle(Handle plugin, int numParams) {
+// ----------------------- Plugin Methods
 
+void ResetValues(int client) {
+	g_bIsClientIdle[client] = false;
+	g_iIdleStartTime[client] = 0;
+}
+
+void SetClientIdle(int client) {
+	if (client < 1 || client > MaxClients || !IsClientInGame(client)) {
+		return;
+	}
+
+	g_bIsClientIdle[client] = true;
+	g_iIdleStartTime[client] = GetGameTime();
+
+	
+	Call_StartForward(g_fwdOnClientIdle);
+	Call_PushCell(client);
+	Call_Finish();
+}
+
+void SetClientReturn(int client) {
+	if (client < 1 || client > MaxClients || !IsClientInGame(client)) {
+		return;
+	}
+
+	g_bIsClientIdle[client] = false;
+	g_iIdleStartTime[client] = 0;
+
+	Call_StartForward(g_fwdOnClientReturn);
+	Call_PushCell(client);
+	Call_Finish();
+}
+
+bool IsClientIdle(int client) {
+	return g_bIsClientIdle[client];
+}
+
+int GetIdleTime(int client) {
+	if (g_bIsClientIdle[client]) {
+		return GetGameTime() - g_iIdleStartTime[client];
+	}
+
+	return 0;
+}
+
+// ----------------------- Natives
+
+public any Native_IsClientIdle(Handle plugin, int numParams) {
+	int client = GetNativeCell(1);
+	if (client < 1 || client > MaxClients) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%d)", client);
+	}
+
+	if (!IsClientConnected(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not connected", client);
+	}
+
+	return IsClientIdle(client);
 }
 
 public any Native_GetIdleTime(Handle plugin, int numParams) {
+	int client = GetNativeCell(1);
+	if (client < 1 || client > MaxClients) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%d)", client);
+	}
 
+	if (!IsClientConnected(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %d is not connected", client);
+	}
+
+	return GetIdleTime(client);
 }
