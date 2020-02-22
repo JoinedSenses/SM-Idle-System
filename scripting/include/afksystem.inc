@@ -21,7 +21,7 @@ forward void AFKS_OnClientReturn(int client);
  * Returns the client idle state
  *
  * @param client        Client index
- * @return
+ * @return              True if idle, else false
  * @error               If the client is not connected or the index is invalid.
  */
 native bool AFKS_IsClientIdle(int client);
