@@ -6,6 +6,7 @@
 
 #define PLUGIN_VERSION "0.0.1"
 #define PLUGIN_DESCRIPTION "Simple AFK system for keeping track of idle players."
+#define ALLOWED_IDLE_TIME 10 // Time player allowed to idle until marked as AFK
 
 public Plugin myinfo = {
 	name = "AFK System",
@@ -19,6 +20,9 @@ bool g_bLateLoad;
 
 bool g_bIsClientIdle[MAXPLAYERS+1]; // Stores client idle state
 int g_iIdleStartTime[MAXPLAYERS+1]; // Stores GetGameTime()
+int g_iButtons[MAXPLAYERS+1]; // Stores client buttons
+
+Handle g_hTimer[MAXPLAYERS+1]; // Timer to keep track of clients
 
 GlobalForward g_fwdOnClientIdle;
 GlobalForward g_fwdOnClientReturn;
@@ -33,28 +37,65 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("AFKS_IsClientIdle", Native_IsClientIdle);
 	CreateNative("AFKS_GetIdleTime", Native_GetIdleTime);
 
-	g_hOnClientIdle = new GlobalForward("AFKS_OnClientIdle", ET_Ignore, Param_Cell);
-	g_hOnClientReturn = new GlobalForward("AFKS_OnClientReturn", ET_Ignore, Param_Cell);
+	g_fwdOnClientIdle = new GlobalForward("AFKS_OnClientIdle", ET_Ignore, Param_Cell);
+	g_fwdOnClientReturn = new GlobalForward("AFKS_OnClientReturn", ET_Ignore, Param_Cell);
 }
 
 public void OnPluginStart() {
 	CreateConVar("sm_afksystem_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD).SetString(PLUGIN_VERSION);
 
 	HookEvent("player_connect_client", eventPlayerConnect);
-	HookEvent("player_spawn", eventPlayerSpawn);
 	HookEvent("player_disconnect", eventPlayerDisconnect);
 
 	if (g_bLateLoad) {
-
+		for (int i = 1; i <= MaxClients; ++i) {
+			if (IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i) && !IsClientReplay(i)) {
+				g_hTimer[i] = CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
+			}
+		}
 	}
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
+	if (!client || !IsClientInGame(client) || IsFakeClient(client)) {
+		return Plugin_Continue;
+	}
+
+	if (g_iButtons[client] != buttons || mouse[0] || mouse[1]) {
+		if (g_bIsClientIdle[client]) {
+			g_iButtons[client] = buttons;
+
+			SetClientReturn(client);
+
+			return Plugin_Continue;
+		}
+
+		if (g_iIdleStartTime[client] != 0) {
+			g_iIdleStartTime[client] = 0;
+		}
+	}
+	else {
+		if (g_iIdleStartTime[client] == 0) {
+			g_iIdleStartTime[client] = RoundFloat(GetEngineTime());
+		}
+	}
+
+	g_iButtons[client] = buttons;
 
 	return Plugin_Continue;
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
+	if (!client) {
+		return Plugin_Continue;
+	}
+
+	if (g_bIsClientIdle[client]) {
+		SetClientReturn(client);
+	}
+	else if (g_iIdleStartTime[client] != 0) {
+		g_iIdleStartTime[client] = 0;
+	}
 
 	return Plugin_Continue;
 }
@@ -63,31 +104,39 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-}
 
-public void eventPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
-	int client = GetClientOfUserId(event.GetInt("userid"));
+	g_hTimer[client] = CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-}
 
-// ----------------------- Plugin Methods
+	delete g_hTimer[client];
 
-void ResetValues(int client) {
 	g_bIsClientIdle[client] = false;
 	g_iIdleStartTime[client] = 0;
 }
 
-void SetClientIdle(int client) {
-	if (client < 1 || client > MaxClients || !IsClientInGame(client)
-	|| IsClientSourceTV(client) || IsClientReplay(client)) {
-		return;
+// ----------------------- Timer
+
+public Action timerCheckClient(Handle timer, int userid) {
+	int client = GetClientOfUserId(userid);
+	if (!client) {
+		return Plugin_Stop;
 	}
 
+	if (g_iIdleStartTime[client] && !g_bIsClientIdle[client]) {
+		if (GetIdleTime(client) > ALLOWED_IDLE_TIME) {
+			SetClientIdle(client);
+		}
+	}
+	return Plugin_Continue;
+}
+
+// ----------------------- Plugin Methods
+
+void SetClientIdle(int client) {
 	g_bIsClientIdle[client] = true;
-	g_iIdleStartTime[client] = GetGameTime();
 	
 	Call_StartForward(g_fwdOnClientIdle);
 	Call_PushCell(client);
@@ -95,12 +144,6 @@ void SetClientIdle(int client) {
 }
 
 void SetClientReturn(int client) {
-	if (client < 1 || client > MaxClients || !IsClientInGame(client)
-	|| IsClientSourceTV(client) || IsClientReplay(client)) {
-		return;
-	}
-
-
 	g_bIsClientIdle[client] = false;
 	g_iIdleStartTime[client] = 0;
 
@@ -109,13 +152,9 @@ void SetClientReturn(int client) {
 	Call_Finish();
 }
 
-bool IsClientIdle(int client) {
-	return g_bIsClientIdle[client];
-}
-
 int GetIdleTime(int client) {
-	if (g_bIsClientIdle[client]) {
-		return GetGameTime() - g_iIdleStartTime[client];
+	if (g_iIdleStartTime[client]) {
+		return RoundFloat(GetEngineTime()) - g_iIdleStartTime[client];
 	}
 
 	return 0;
@@ -133,7 +172,7 @@ public any Native_IsClientIdle(Handle plugin, int numParams) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
 	}
 
-	return IsClientIdle(client);
+	return g_bIsClientIdle[client];
 }
 
 public any Native_GetIdleTime(Handle plugin, int numParams) {
