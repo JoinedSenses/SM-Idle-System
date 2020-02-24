@@ -2,14 +2,15 @@
 #pragma newdecls required
 
 #include <sourcemod>
+#include <sdktools>
 #include <afksystem>
 
 #define PLUGIN_VERSION "0.0.1"
-#define PLUGIN_DESCRIPTION "Simple AFK system for keeping track of idle players."
-#define ALLOWED_IDLE_TIME 10 // Time player allowed to idle until marked as AFK
+#define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
+#define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK
 
 public Plugin myinfo = {
-	name = "AFK System",
+	name = "Idle System",
 	author = "JoinedSenses",
 	description = PLUGIN_DESCRIPTION,
 	version = PLUGIN_VERSION,
@@ -32,17 +33,17 @@ GlobalForward g_fwdOnClientReturn;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) {
 	g_bLateLoad = late;
 
-	RegPluginLibrary("afksystem");
+	RegPluginLibrary("idlesystem");
 
-	CreateNative("AFKS_IsClientIdle", Native_IsClientIdle);
-	CreateNative("AFKS_GetIdleTime", Native_GetIdleTime);
+	CreateNative("IdleSys_IsClientIdle", Native_IsClientIdle);
+	CreateNative("IdleSys_GetIdleTime", Native_GetIdleTime);
 
-	g_fwdOnClientIdle = new GlobalForward("AFKS_OnClientIdle", ET_Ignore, Param_Cell);
-	g_fwdOnClientReturn = new GlobalForward("AFKS_OnClientReturn", ET_Ignore, Param_Cell);
+	g_fwdOnClientIdle = new GlobalForward("IdleSys_OnClientIdle", ET_Ignore, Param_Cell);
+	g_fwdOnClientReturn = new GlobalForward("IdleSys_OnClientReturn", ET_Ignore, Param_Cell);
 }
 
 public void OnPluginStart() {
-	CreateConVar("sm_afksystem_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD).SetString(PLUGIN_VERSION);
+	CreateConVar("sm_idlesystem_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD).SetString(PLUGIN_VERSION);
 
 	HookEvent("player_connect_client", eventPlayerConnect);
 	HookEvent("player_disconnect", eventPlayerDisconnect);
@@ -59,7 +60,7 @@ public void OnPluginStart() {
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
 	if (!client || !IsClientInGame(client) || IsFakeClient(client)) {
 		return Plugin_Continue;
-	}
+	} 
 
 	if (g_iButtons[client] != buttons || mouse[0] || mouse[1]) {
 		if (g_bIsClientIdle[client]) {
@@ -73,6 +74,8 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		if (g_iIdleStartTime[client] != 0) {
 			g_iIdleStartTime[client] = 0;
 		}
+
+		g_iButtons[client] = buttons;
 	}
 	else {
 		if (g_iIdleStartTime[client] == 0) {
@@ -80,7 +83,7 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 		}
 	}
 
-	g_iButtons[client] = buttons;
+	
 
 	return Plugin_Continue;
 }
@@ -164,6 +167,7 @@ int GetIdleTime(int client) {
 
 public any Native_IsClientIdle(Handle plugin, int numParams) {
 	int client = GetNativeCell(1);
+
 	if (client < 1 || client > MaxClients) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}
@@ -177,6 +181,7 @@ public any Native_IsClientIdle(Handle plugin, int numParams) {
 
 public any Native_GetIdleTime(Handle plugin, int numParams) {
 	int client = GetNativeCell(1);
+
 	if (client < 1 || client > MaxClients) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}

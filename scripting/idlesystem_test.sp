@@ -3,7 +3,7 @@
 
 #include <sourcemod>
 #undef REQUIRE_PLUGIN
-#include <afksystem>
+#include <idlesystem>
 
 public void OnPluginStart() {
 	RegAdminCmd("sm_idletest", cmdIdleTest, ADMFLAG_ROOT);
@@ -33,14 +33,18 @@ public Action cmdIdleTest(int client, int args) {
 		}
 	}
 
-	ReplyToCommand(client, "%N is %sidle with an idle time of %i seconds", target, AFKS_IsClientIdle(target) ? "" : "not ", AFKS_GetIdleTime(target));
+	ReplyToCommand(client, "%N is %sidle with an idle time of %i seconds"
+		, target
+		, IdleSys_IsClientIdle(target) ? "" : "not "
+		, IdleSys_GetIdleTime(target)
+	);
 	return Plugin_Handled;
 }
 
-public void AFKS_OnClientIdle(int client) {
+public void IdleSys_OnClientIdle(int client) {
 	PrintToChatAll("%N has become idle", client);
 }
 
-public void AFKS_OnClientReturn(int client) {
+public void IdleSys_OnClientReturn(int client) {
 	PrintToChatAll("%N is no longer idle", client);
 }

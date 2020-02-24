@@ -1,21 +1,21 @@
-#if defined _afksystem_included_
+#if defined _idlesystem_included_
   #endinput
 #endif
-#define _afksystem_included_
+#define _idlesystem_included_
 
 /**
  * Called when a client has become idle
  *
  * @param client        Client index
  */
-forward void AFKS_OnClientIdle(int client);
+forward void IdleSys_OnClientIdle(int client);
 
 /**
  * Called when a client has ended their idle state
  *
  * @param client        Client index
  */
-forward void AFKS_OnClientReturn(int client);
+forward void IdleSys_OnClientReturn(int client);
 
 /**
  * Returns the client idle state
@@ -24,7 +24,7 @@ forward void AFKS_OnClientReturn(int client);
  * @return              True if idle, else false
  * @error               If the client is not connected or the index is invalid.
  */
-native bool AFKS_IsClientIdle(int client);
+native bool IdleSys_IsClientIdle(int client);
 
 /**
  * Returns the clients idle time
@@ -33,12 +33,12 @@ native bool AFKS_IsClientIdle(int client);
  * @return              Current idle time in seconds
  * @error               If the client is not connected or the index is invalid.
  */
-native int AFKS_GetIdleTime(int client);
+native int IdleSys_GetIdleTime(int client);
 
 
 public SharedPlugin __pl_afksystem = {
-	name = "afksystem",
-	file = "afksystem.smx",
+	name = "idlesystem",
+	file = "idlesystem.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
@@ -48,7 +48,7 @@ public SharedPlugin __pl_afksystem = {
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_afksystem_SetNTVOptional() {
-	MarkNativeAsOptional("AFKS_IsClientIdle");
-	MarkNativeAsOptional("AFKS_GetIdleTime");
+	MarkNativeAsOptional("IdleSys_IsClientIdle");
+	MarkNativeAsOptional("IdleSys_GetIdleTime");
 }
 #endif
