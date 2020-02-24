@@ -11,6 +11,8 @@
 #define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
 #define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK. !Make this a convar!
 
+#define IsClientBot(%1) (IsFakeClient(%1)||IsClientSourceTV(%1)||IsClientReplay(%1))
+
 public Plugin myinfo = {
 	name = "Idle System",
 	author = "JoinedSenses",
@@ -58,7 +60,7 @@ public void OnPluginStart() {
 
 	if (g_bLateLoad) {
 		for (int i = 1; i <= MaxClients; ++i) {
-			if (IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i) && !IsClientReplay(i)) {
+			if (IsClientInGame(i) && !IsClientBot(i)) {
 				g_hTimer[i] = CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
 			}
 		}
@@ -66,7 +68,7 @@ public void OnPluginStart() {
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
-	if (!client || !IsClientInGame(client) || IsFakeClient(client)) {
+	if (!client || !IsClientInGame(client) || IsClientBot(client)) {
 		return Plugin_Continue;
 	}
 
@@ -118,11 +120,19 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
+	if (IsClientBot(client)) {
+		return;
+	}
+
 	g_hTimer[client] = CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
+
+	if (IsClientBot(client)) {
+		return;
+	}
 
 	delete g_hTimer[client];
 
@@ -183,8 +193,12 @@ public any Native_IsClientIdle(Handle plugin, int numParams) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}
 
-	if (!IsClientConnected(client) || IsClientSourceTV(client) || IsClientReplay(client)) {
+	if (!IsClientConnected(client)) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
+	}
+
+	if (IsClientBot(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not human", client);
 	}
 
 	return g_bIsClientIdle[client];
@@ -197,8 +211,12 @@ public any Native_GetIdleTime(Handle plugin, int numParams) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
 	}
 
-	if (!IsClientConnected(client) || IsClientSourceTV(client) || IsClientReplay(client)) {
+	if (!IsClientConnected(client)) {
 		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
+	}
+
+	if (IsClientBot(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not human", client);
 	}
 
 	return GetIdleTime(client);
