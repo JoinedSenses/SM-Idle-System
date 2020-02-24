@@ -5,6 +5,8 @@
 #include <sdktools>
 #include <afksystem>
 
+/* Note: Developed with only TF2 in mind */
+
 #define PLUGIN_VERSION "0.0.1"
 #define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
 #define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK. !Make this a convar!
