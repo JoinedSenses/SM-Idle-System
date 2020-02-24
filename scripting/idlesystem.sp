@@ -7,7 +7,7 @@
 
 #define PLUGIN_VERSION "0.0.1"
 #define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
-#define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK
+#define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK. !Make this a convar!
 
 public Plugin myinfo = {
 	name = "Idle System",
@@ -17,10 +17,16 @@ public Plugin myinfo = {
 	url = "https://GitHub.com/JoinedSenses"
 };
 
+/* Consider setting these with plugin
+sv_timeout 0
+mp_idlemaxtime 0
+mp_idledealmethod 0
+*/
+
 bool g_bLateLoad;
 
 bool g_bIsClientIdle[MAXPLAYERS+1]; // Stores client idle state
-int g_iIdleStartTime[MAXPLAYERS+1]; // Stores GetGameTime()
+int g_iIdleStartTime[MAXPLAYERS+1]; // Stores GetEngineTime()
 int g_iButtons[MAXPLAYERS+1]; // Stores client buttons
 
 Handle g_hTimer[MAXPLAYERS+1]; // Timer to keep track of clients
@@ -60,7 +66,11 @@ public void OnPluginStart() {
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
 	if (!client || !IsClientInGame(client) || IsFakeClient(client)) {
 		return Plugin_Continue;
-	} 
+	}
+
+	/* Maybe consider additional logic for time-outs or checking if cmdnum has not changed;
+	 * however, also consider that cmdnum can potentially be manipulated by cheaters.
+	 * For now, this logic is very simple: check for input changes. */
 
 	if (g_iButtons[client] != buttons || mouse[0] || mouse[1]) {
 		if (g_bIsClientIdle[client]) {
@@ -71,19 +81,17 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 			return Plugin_Continue;
 		}
 
-		if (g_iIdleStartTime[client] != 0) {
+		if (g_iIdleStartTime[client]) {
 			g_iIdleStartTime[client] = 0;
 		}
 
 		g_iButtons[client] = buttons;
 	}
-	else {
-		if (g_iIdleStartTime[client] == 0) {
+	else { // input has not changed
+		if (!g_iIdleStartTime[client]) {
 			g_iIdleStartTime[client] = RoundFloat(GetEngineTime());
 		}
 	}
-
-	
 
 	return Plugin_Continue;
 }
@@ -96,7 +104,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	if (g_bIsClientIdle[client]) {
 		SetClientReturn(client);
 	}
-	else if (g_iIdleStartTime[client] != 0) {
+	else if (g_iIdleStartTime[client]) {
 		g_iIdleStartTime[client] = 0;
 	}
 
@@ -133,6 +141,7 @@ public Action timerCheckClient(Handle timer, int userid) {
 			SetClientIdle(client);
 		}
 	}
+
 	return Plugin_Continue;
 }
 
