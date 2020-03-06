@@ -3,13 +3,12 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <afksystem>
+#include <idlesystem>
 
 /* Note: Developed with only TF2 in mind */
 
 #define PLUGIN_VERSION "0.0.1"
 #define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
-#define ALLOWED_IDLE_TIME 30 // Time player allowed to idle until marked as AFK. !Make this a convar!
 
 #define IsClientBot(%1) (IsFakeClient(%1)||IsClientSourceTV(%1)||IsClientReplay(%1))
 
@@ -18,7 +17,7 @@ public Plugin myinfo = {
 	author = "JoinedSenses",
 	description = PLUGIN_DESCRIPTION,
 	version = PLUGIN_VERSION,
-	url = "https://GitHub.com/JoinedSenses"
+	url = "https://github.com/JoinedSenses"
 };
 
 /* Consider setting these with plugin
@@ -27,16 +26,26 @@ mp_idlemaxtime 0
 mp_idledealmethod 0
 */
 
+// Did plugin load late?
 bool g_bLateLoad;
 
-bool g_bIsClientIdle[MAXPLAYERS+1]; // Stores client idle state
-int g_iIdleStartTime[MAXPLAYERS+1]; // Stores GetEngineTime()
-int g_iButtons[MAXPLAYERS+1]; // Stores client buttons
+// Stores client idle state
+bool g_bIsClientIdle[MAXPLAYERS+1];
+// Stores GetEngineTime()
+int g_iIdleStartTime[MAXPLAYERS+1];
+// Stores client buttons
+int g_iButtons[MAXPLAYERS+1];
 
-Handle g_hTimer[MAXPLAYERS+1]; // Timer to keep track of clients
+// Timer to keep track of clients
+Handle g_hTimer[MAXPLAYERS+1];
 
 GlobalForward g_fwdOnClientIdle;
 GlobalForward g_fwdOnClientReturn;
+
+ConVar g_cvarAllowedIdleTime;
+
+// Time in seconds player allowed no input until marked as idle.
+int g_iAllowedIdleTime; 
 
 // ----------------------- SM Functions
 
@@ -55,7 +64,21 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart() {
 	CreateConVar("sm_idlesystem_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD).SetString(PLUGIN_VERSION);
 
-	HookEvent("player_connect_client", eventPlayerConnect);
+	g_cvarAllowedIdleTime = CreateConVar(
+		  "sm_idlesystem_allowed"
+		, "30"
+		, "Allowed time in seconds for no input change before client is considered idle."
+		, FCVAR_NONE
+		, true
+	);
+
+	g_cvarAllowedIdleTime.AddChangeHook(cvarChangedAllowedIdleTime);
+
+	g_iAllowedIdleTime = g_cvarAllowedIdleTime.IntValue;
+
+	AutoExecConfig();
+
+	HookEvent("player_connect", eventPlayerConnect);
 	HookEvent("player_disconnect", eventPlayerDisconnect);
 
 	if (g_bLateLoad) {
@@ -65,6 +88,10 @@ public void OnPluginStart() {
 			}
 		}
 	}
+}
+
+public void cvarChangedAllowedIdleTime(ConVar convar, const char[] oldValue, const char[] newValue) {
+	g_iAllowedIdleTime = StringToInt(newValue);
 }
 
 public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
@@ -118,13 +145,11 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 // ----------------------- Events
 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
-	int client = GetClientOfUserId(event.GetInt("userid"));
-
-	if (IsClientBot(client)) {
+	if (event.GetInt("bot")) {
 		return;
 	}
 
-	g_hTimer[client] = CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
+	g_hTimer[event.GetInt("index")+1] = CreateTimer(1.0, timerCheckClient, event.GetInt("userid"), TIMER_REPEAT);
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
@@ -149,7 +174,7 @@ public Action timerCheckClient(Handle timer, int userid) {
 	}
 
 	if (g_iIdleStartTime[client] && !g_bIsClientIdle[client]) {
-		if (GetIdleTime(client) > ALLOWED_IDLE_TIME) {
+		if (GetIdleTime(client) > g_iAllowedIdleTime) {
 			SetClientIdle(client);
 		}
 	}
