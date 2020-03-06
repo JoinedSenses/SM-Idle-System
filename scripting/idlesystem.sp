@@ -130,15 +130,13 @@ public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3
 }
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
-	if (!client) {
-		return Plugin_Continue;
-	}
-
-	if (g_bIsClientIdle[client]) {
-		SetClientReturn(client);
-	}
-	else if (g_iIdleStartTime[client]) {
-		g_iIdleStartTime[client] = 0;
+	if (client) {
+		if (g_bIsClientIdle[client]) {
+			SetClientReturn(client);
+		}
+		else if (g_iIdleStartTime[client]) {
+			g_iIdleStartTime[client] = 0;
+		}
 	}
 
 	return Plugin_Continue;
