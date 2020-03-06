@@ -83,7 +83,7 @@ public void OnPluginStart() {
 
 	if (g_bLateLoad) {
 		for (int i = 1; i <= MaxClients; ++i) {
-			if (IsClientInGame(i) && !IsClientBot(i)) {
+			if (IsClientConnected(i) && !IsClientBot(i)) {
 				g_hTimer[i] = CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
 			}
 		}
