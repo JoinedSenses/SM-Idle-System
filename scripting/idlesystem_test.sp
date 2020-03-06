@@ -59,10 +59,18 @@ public Action cmdActivity(int client, int args) {
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
-					PrintToConsole(client, " %02i | %04i | %32N |  Idle  |   %05i   |", i, GetClientUserId(i), i, IdleSys_GetIdleTime(i));
+					PrintToConsole(
+						  client
+						, " %02i | %04i | %32N |  Idle  |   %05i   |"
+						, i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
+					);
 				}
 				else {
-					PrintToConsole(client, " %02i | %04i | %32N | Active |           |", i, GetClientUserId(i), i);
+					PrintToConsole(
+						  client
+						, " %02i | %04i | %32N | Active |           |"
+						, i, GetClientUserId(i), i
+					);
 				}
 			}
 		}
@@ -74,10 +82,18 @@ public Action cmdActivity(int client, int args) {
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
-					ReplyToCommand(client, " %02i | %04i | %32N |  Idle  |   %5i   |", i, GetClientUserId(i), i, IdleSys_GetIdleTime(i));
+					ReplyToCommand(
+						  client
+						, " %02i | %04i | %32N |  Idle  |   %5i   |"
+						, i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
+					);
 				}
 				else {
-					ReplyToCommand(client, " %02i | %04i | %32N | Active |           |", i, GetClientUserId(i), i);
+					ReplyToCommand(
+						  client
+						, " %02i | %04i | %32N | Active |           |"
+						, i, GetClientUserId(i), i
+					);
 				}
 			}
 		}
