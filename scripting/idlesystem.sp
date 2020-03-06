@@ -56,7 +56,12 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 }
 
 public void OnPluginStart() {
-	CreateConVar("sm_idlesystem_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD).SetString(PLUGIN_VERSION);
+	CreateConVar(
+		  "sm_idlesystem_version"
+		, PLUGIN_VERSION
+		, PLUGIN_DESCRIPTION
+		, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD
+	).SetString(PLUGIN_VERSION);
 
 	g_cvarAllowedIdleTime = CreateConVar(
 		  "sm_idlesystem_allowed"
@@ -88,7 +93,8 @@ public void cvarChangedAllowedIdleTime(ConVar convar, const char[] oldValue, con
 	g_iAllowedIdleTime = StringToInt(newValue);
 }
 
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3]
+		, float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
 	if (!client || !IsClientInGame(client) || IsClientBot(client)) {
 		return Plugin_Continue;
 	}
