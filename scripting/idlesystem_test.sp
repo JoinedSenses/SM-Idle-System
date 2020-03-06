@@ -70,7 +70,7 @@ public Action cmdActivity(int client, int args) {
 		PrintToConsole(client, "--------------------------------------------------------------------");
 	}
 	else {
-		ReplyToCommand(client, " Idx |  ID  |               Name               | Status | Idle Seconds");
+		ReplyToCommand(client, " Idx|  ID  |               Name               | Status | Idle Time |");
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
