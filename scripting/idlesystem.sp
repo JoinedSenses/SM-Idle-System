@@ -20,13 +20,7 @@ public Plugin myinfo = {
 	url = "https://github.com/JoinedSenses"
 };
 
-/* Consider setting these with plugin
-sv_timeout 0
-mp_idlemaxtime 0
-mp_idledealmethod 0
-*/
-
-// Did plugin load late?
+// Stores plugin late load status
 bool g_bLateLoad;
 
 // Stores client idle state
