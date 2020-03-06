@@ -23,6 +23,8 @@ public Plugin myinfo = {
 // Stores plugin late load status
 bool g_bLateLoad;
 
+// Used to determine if client is initially connecting
+bool g_bInitialConnect[MAXPLAYERS+1];
 // Stores client idle state
 bool g_bIsClientIdle[MAXPLAYERS+1];
 // Stores GetEngineTime()
@@ -82,7 +84,7 @@ public void OnPluginStart() {
 
 	if (g_bLateLoad) {
 		for (int i = 1; i <= MaxClients; ++i) {
-			if (IsClientConnected(i) && !IsClientBot(i)) {
+			if (IsClientInGame(i) && !IsClientBot(i)) {
 				g_hTimer[i] = CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
 			}
 		}
@@ -149,7 +151,14 @@ public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcas
 		return;
 	}
 
-	g_hTimer[event.GetInt("index")+1] = CreateTimer(1.0, timerCheckClient, event.GetInt("userid"), TIMER_REPEAT);
+	g_bInitialConnect[event.GetInt("index")+1] = true;
+}
+
+public void OnClientPutInServer(int client) {
+	if (g_bInitialConnect[client]) {
+		g_hTimer[client] = CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
+		g_bInitialConnect[client] = false;
+	}
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
