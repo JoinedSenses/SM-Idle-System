@@ -48,7 +48,9 @@ public Action cmdIdleTest(int client, int args) {
 
 public Action cmdActivity(int client, int args) {
 	if (client) {
-		PrintColoredChat(client, TAG ... "Check console for output.");
+		if (GetCmdReplySource() == SM_REPLY_TO_CHAT) {
+			PrintColoredChat(client, TAG ... "Check console for output.");
+		}
 
 		PrintToConsole(client, "--------------------------------------------------------------------");
 		PrintToConsole(client, " Idx|  ID  |               Name               | Status | Idle Time |");
