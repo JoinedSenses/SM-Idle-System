@@ -1,2 +1,6 @@
 # SM-AFK-System
-Simple AFK system for keeping track of idle players.
+Simple SourceMod AFK system for keeping track of idle players.
+
+This plugin is meant to create an API for integrating client idle handling into other plugins.
+  
+![Activity](https://i.imgur.com/VKaa4mD.png)
