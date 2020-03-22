@@ -151,7 +151,7 @@ public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcas
 
 public void OnClientPutInServer(int client) {
 	if (g_bInitialConnect[client]) {
-		g_hTimer[client] = CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
+		CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
 		g_bInitialConnect[client] = false;
 	}
 }
