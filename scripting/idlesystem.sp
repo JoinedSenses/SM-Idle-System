@@ -7,7 +7,7 @@
 
 /* Note: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.0.1"
+#define PLUGIN_VERSION "0.0.2"
 #define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
 
 #define IsClientBot(%1) (IsFakeClient(%1)||IsClientSourceTV(%1)||IsClientReplay(%1))
@@ -31,9 +31,6 @@ bool g_bIsClientIdle[MAXPLAYERS+1];
 int g_iIdleStartTime[MAXPLAYERS+1];
 // Stores client buttons
 int g_iButtons[MAXPLAYERS+1];
-
-// Timer to keep track of clients
-Handle g_hTimer[MAXPLAYERS+1];
 
 GlobalForward g_fwdOnClientIdle;
 GlobalForward g_fwdOnClientReturn;
@@ -85,7 +82,7 @@ public void OnPluginStart() {
 	if (g_bLateLoad) {
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsClientBot(i)) {
-				g_hTimer[i] = CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
+				CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
 			}
 		}
 	}
@@ -165,8 +162,6 @@ public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroad
 	if (IsClientBot(client)) {
 		return;
 	}
-
-	delete g_hTimer[client];
 
 	g_bIsClientIdle[client] = false;
 	g_iIdleStartTime[client] = 0;
