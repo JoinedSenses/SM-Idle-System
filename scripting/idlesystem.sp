@@ -157,9 +157,13 @@ public void OnClientPutInServer(int client) {
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
+	if (event.GetBool("bot")) {
+		return;
+	}
+
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
-	if (IsClientBot(client)) {
+	if (!client || IsClientBot(client)) {
 		return;
 	}
 
