@@ -102,11 +102,11 @@ public Action cmdActivity(int client, int args) {
 	return Plugin_Handled;
 }
 
-public void IdleSys_OnClientIdle(int client) {
-	PrintColoredChat(client, TAG ... "You have been marked as idle.");
-}
+// public void IdleSys_OnClientIdle(int client) {
+// 	PrintColoredChat(client, TAG ... "You have been marked as idle.");
+// }
 
-public void IdleSys_OnClientReturn(int client) {
-	PrintColoredChat(client, TAG ... "You are no longer marked as idle.");
-}
+// public void IdleSys_OnClientReturn(int client) {
+// 	PrintColoredChat(client, TAG ... "You are no longer marked as idle.");
+// }
 
