@@ -36,7 +36,7 @@ native bool IdleSys_IsClientIdle(int client);
 native int IdleSys_GetIdleTime(int client);
 
 
-public SharedPlugin __pl_afksystem = {
+public SharedPlugin __pl_idlesystem = {
 	name = "idlesystem",
 	file = "idlesystem.smx",
 #if defined REQUIRE_PLUGIN
@@ -47,7 +47,7 @@ public SharedPlugin __pl_afksystem = {
 };
 
 #if !defined REQUIRE_PLUGIN
-public void __pl_afksystem_SetNTVOptional() {
+public void __pl_idlesystem_SetNTVOptional() {
 	MarkNativeAsOptional("IdleSys_IsClientIdle");
 	MarkNativeAsOptional("IdleSys_GetIdleTime");
 }
