@@ -160,7 +160,7 @@ public Action timerCheckPlayers(Handle timer) {
 
 		switch (timeleft) {
 			case 60, 30, 15, 10, 5, 4, 3, 2, 1: {
-				PrintToChat(i, "\x03[\x05IdleSys\x03]\x01 Idle kick in \x05%i\x05 seconds", timeleft);
+				PrintToChat(i, "\x01[\x05IdleSys\x01] Idle kick in \x05%i seconds", timeleft);
 			}
 			default: {
 				if (timeleft <= 0) {
