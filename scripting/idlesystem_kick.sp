@@ -63,7 +63,10 @@ public void OnPluginStart() {
 	g_bIgnore = g_cvarIgnore.BoolValue;
 
 	if (g_bLate) {
-		CheckIdle();
+		g_bEnabled = LibraryExists("idlesystem");
+		if (g_bEnabled) {
+			CheckIdle();
+		}
 	}
 }
 
@@ -117,6 +120,8 @@ public void OnClientPutInServer(int client) {
 	if (!g_bEnabled || IsClientBot(client)) {
 		return;
 	}
+
+	g_bIdle[client] = IdleSys_IsClientIdle(client);
 
 	++g_iCount;
 
@@ -175,7 +180,6 @@ void CheckIdle() {
 
 	for (int i = 1; i <= MaxClients; ++i) {
 		if (IsClientInGame(i) && !IsClientBot(i)) {
-			g_bIdle[i] = IdleSys_IsClientIdle(i);
 			OnClientPutInServer(i);
 		}
 	}
