@@ -5,12 +5,10 @@
 #include <sdktools>
 #include <idlesystem>
 
-/* Note: Developed with only TF2 in mind */
+/* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.0.2"
-#define PLUGIN_DESCRIPTION "Simple idle system for keeping track of afk players."
-
-#define IsClientBot(%1) (IsFakeClient(%1)||IsClientSourceTV(%1)||IsClientReplay(%1))
+#define PLUGIN_VERSION "0.0.3"
+#define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
 	name = "Idle System",
@@ -56,18 +54,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart() {
 	CreateConVar(
-		  "sm_idlesystem_version"
-		, PLUGIN_VERSION
-		, PLUGIN_DESCRIPTION
-		, FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD
+		"sm_idlesystem_version",
+		PLUGIN_VERSION,
+		PLUGIN_DESCRIPTION,
+		FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD
 	).SetString(PLUGIN_VERSION);
 
 	g_cvarAllowedIdleTime = CreateConVar(
-		  "sm_idlesystem_allowed"
-		, "30"
-		, "Allowed time in seconds for no input change before client is considered idle."
-		, FCVAR_NONE
-		, true
+		"sm_idlesystem_allowed",
+		"10",
+		"Allowed time in seconds for no input change before client is considered idle.",
+		FCVAR_NONE,
+		true
 	);
 
 	g_cvarAllowedIdleTime.AddChangeHook(cvarChangedAllowedIdleTime);
@@ -92,8 +90,8 @@ public void cvarChangedAllowedIdleTime(ConVar convar, const char[] oldValue, con
 	g_iAllowedIdleTime = StringToInt(newValue);
 }
 
-public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3]
-		, float angles[3], int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
+public Action OnPlayerRunCmd(int client, int &buttons, int &impulse, float vel[3], float angles[3],
+int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2]) {
 	if (!client || !IsClientInGame(client) || IsClientBot(client)) {
 		return Plugin_Continue;
 	}
@@ -213,6 +211,10 @@ int GetIdleTime(int client) {
 	}
 
 	return 0;
+}
+
+bool IsClientBot(int client) {
+	return IsFakeClient(client) || IsClientSourceTV(client) || IsClientReplay(client);
 }
 
 // ----------------------- Natives
