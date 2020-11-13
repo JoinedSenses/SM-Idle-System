@@ -7,7 +7,7 @@
 
 /* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.0.3"
+#define PLUGIN_VERSION "0.1.0"
 #define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
