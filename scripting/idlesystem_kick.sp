@@ -64,8 +64,8 @@ public void OnPluginStart() {
 	g_iMin = g_cvarMin.IntValue;
 	g_bIgnore = g_cvarIgnore.BoolValue;
 
+	g_bEnabled = LibraryExists("idlesystem");
 	if (g_bLate) {
-		g_bEnabled = LibraryExists("idlesystem");
 		if (g_bEnabled) {
 			CheckIdle();
 		}
