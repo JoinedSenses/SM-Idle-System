@@ -35,6 +35,8 @@ bool g_bIgnore;
 
 Handle g_hTimer;
 
+bool g_bImmune[MAXPLAYERS+1];
+
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) {
 	g_bLate = late;
 	return APLRes_Success;
@@ -81,6 +83,12 @@ public void OnLibraryRemoved(const char[] name) {
 	if (StrEqual(name, "idlesystem")) {
 		g_bEnabled = false;
 		delete g_hTimer;
+	}
+}
+
+public void OnRebuildAdminCache(AdminCachePart part) {
+	for (int i = 1; i <= MaxClients; ++i) {
+		g_bImmune[i] = IsClientInGame(i) && !IsClientBot(i) && CheckCommandAccess(i, "sm_idlesys_kick_ignoreflag", ADMFLAG_ROOT);
 	}
 }
 
@@ -132,12 +140,17 @@ public void OnClientPutInServer(int client) {
 	}
 }
 
+public void OnClientPostAdminCheck(int client) {
+	g_bImmune[client] = CheckCommandAccess(client, "sm_idlesys_kick_ignoreflag", ADMFLAG_ROOT);
+}
+
 public void OnClientDisconnect(int client) {
 	if (!g_bEnabled || IsClientBot(client)) {
 		return;
 	}
 
 	g_bIdle[client] = false;
+	g_bImmune[client] = false;
 
 	--g_iCount;
 
@@ -153,7 +166,7 @@ public Action timerCheckPlayers(Handle timer) {
 			continue;
 		}
 
-		if (g_bIgnore && CheckCommandAccess(i, "sm_idlesys_kick_ignoreflag", ADMFLAG_ROOT)) {
+		if (g_bIgnore && g_bImmune[i]) {
 			continue;
 		}
 
