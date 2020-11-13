@@ -93,7 +93,8 @@ public void cvarChanged_Min(ConVar convar, const char[] oldValue, const char[] n
 
 	if (g_hTimer) {
 		if (g_iCount <  g_iMin) {
-			delete g_hTimer;
+			CloseHandle(g_hTimer);
+			g_hTimer = null;
 		}
 	}
 	else {
@@ -141,7 +142,8 @@ public void OnClientDisconnect(int client) {
 	--g_iCount;
 
 	if (g_hTimer && g_iCount < g_iMin) {
-		delete g_hTimer;
+		CloseHandle(g_hTimer);
+		g_hTimer = null;
 	}
 }
 
