@@ -129,7 +129,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 		if (g_bIsClientIdle[client]) {
 			SetClientReturn(client);
 		}
-		else if (g_iIdleStartTime[client]) {
+		else {
 			g_iIdleStartTime[client] = 0;
 		}
 	}
