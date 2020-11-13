@@ -8,7 +8,7 @@
 #define PLUGIN_NAME "IdleSystem Kick Handler"
 #define PLUGIN_AUTHOR "JoinedSenses"
 #define PLUGIN_DESCRIPTION "Handles kicks of idle players"
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 #define PLUGIN_URL "htts://github.com/JoinedSenses"
 
 public Plugin myinfo = {
