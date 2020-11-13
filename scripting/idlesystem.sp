@@ -109,10 +109,7 @@ int &weapon, int &subtype, int &cmdnum, int &tickcount, int &seed, int mouse[2])
 			return Plugin_Continue;
 		}
 
-		if (g_iIdleStartTime[client]) {
-			g_iIdleStartTime[client] = 0;
-		}
-
+		g_iIdleStartTime[client] = 0;
 		g_iButtons[client] = buttons;
 	}
 	else { // input has not changed
