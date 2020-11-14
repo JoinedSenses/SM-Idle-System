@@ -121,7 +121,7 @@ public void IdleSys_OnClientIdle(int client) {
 	g_bIdle[client] = true;
 }
 
-public void IdleSys_OnClientReturn(int client) {
+public void IdleSys_OnClientReturn(int client, int time) {
 	g_bIdle[client] = false;
 }
 

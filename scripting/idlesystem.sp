@@ -7,7 +7,7 @@
 
 /* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.1.1"
 #define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
@@ -195,11 +195,13 @@ void SetClientIdle(int client) {
 
 void SetClientReturn(int client) {
 	g_bIsClientIdle[client] = false;
-	g_iIdleStartTime[client] = 0;
 
 	Call_StartForward(g_fwdOnClientReturn);
 	Call_PushCell(client);
+	Call_PushCell(GetIdleTime(client));
 	Call_Finish();
+	
+	g_iIdleStartTime[client] = 0;
 }
 
 int GetIdleTime(int client) {
