@@ -21,7 +21,7 @@ public Action cmdIdleTest(int client, int args) {
 
 	if (!args) {
 		if (!client) {
-			ReplyToCommand(client, "Cannot target self as console. Use arg to target client");
+			ReplyToCommand(client, "Usage: sm_idletest <targetName>");
 			return Plugin_Handled;
 		}
 
@@ -38,16 +38,19 @@ public Action cmdIdleTest(int client, int args) {
 		}
 	}
 
-	ReplyToCommand(client, "%N is %sidle with an idle time of %i seconds"
-		, target
-		, IdleSys_IsClientIdle(target) ? "" : "not "
-		, IdleSys_GetIdleTime(target)
+	ReplyToCommand(
+		client,
+		"%N is %sidle with an idle time of %i seconds",
+		target,
+		IdleSys_IsClientIdle(target) ? "" : "not ",
+		IdleSys_GetIdleTime(target)
 	);
+
 	return Plugin_Handled;
 }
 
 public Action cmdActivity(int client, int args) {
-	if (client) {
+	if (client) { // player
 		if (GetCmdReplySource() == SM_REPLY_TO_CHAT) {
 			PrintColoredChat(client, TAG ... "Check console for output.");
 		}
@@ -60,16 +63,16 @@ public Action cmdActivity(int client, int args) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
 					PrintToConsole(
-						  client
-						, " %02i | %04i | %32N |  Idle  |   %05i   |"
-						, i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
+						client,
+						" %02i | %04i | %32N |  Idle  |   %05i   |",
+						i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
 					);
 				}
 				else {
 					PrintToConsole(
-						  client
-						, " %02i | %04i | %32N | Active |           |"
-						, i, GetClientUserId(i), i
+						client,
+						" %02i | %04i | %32N | Active |           |",
+						i, GetClientUserId(i), i
 					);
 				}
 			}
@@ -77,22 +80,22 @@ public Action cmdActivity(int client, int args) {
 
 		PrintToConsole(client, "--------------------------------------------------------------------");
 	}
-	else {
+	else { // console
 		ReplyToCommand(client, " Idx|  ID  |               Name               | Status | Idle Time |");
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
 					ReplyToCommand(
-						  client
-						, " %02i | %04i | %32N |  Idle  |   %5i   |"
-						, i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
+						client,
+						" %02i | %04i | %32N |  Idle  |   %5i   |",
+						i, GetClientUserId(i), i, IdleSys_GetIdleTime(i)
 					);
 				}
 				else {
 					ReplyToCommand(
-						  client
-						, " %02i | %04i | %32N | Active |           |"
-						, i, GetClientUserId(i), i
+						client,
+						" %02i | %04i | %32N | Active |           |",
+						i, GetClientUserId(i), i
 					);
 				}
 			}
@@ -106,7 +109,7 @@ public Action cmdActivity(int client, int args) {
 // 	PrintColoredChat(client, TAG ... "You have been marked as idle.");
 // }
 
-// public void IdleSys_OnClientReturn(int client) {
-// 	PrintColoredChat(client, TAG ... "You are no longer marked as idle.");
+// public void IdleSys_OnClientReturn(int client, int time) {
+// 	PrintColoredChat(client, TAG ... "You are no longer marked as idle after %0.2f minutes", time / 60.0);
 // }
 
