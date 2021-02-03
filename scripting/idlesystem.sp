@@ -7,7 +7,7 @@
 
 /* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.1.1"
+#define PLUGIN_VERSION "0.1.2"
 #define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
@@ -137,11 +137,14 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 // ----------------------- Events
 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
-	if (event.GetInt("bot")) {
-		return;
-	}
+	int idx = event.GetInt("index")+1;
 
-	g_bInitialConnect[event.GetInt("index")+1] = true;
+	g_bIsClientIdle[idx] = false;
+	g_iIdleStartTime[idx] = 0;
+
+	if (!event.GetInt("bot")) {
+		g_bInitialConnect[idx] = true;
+	}
 }
 
 public void OnClientPutInServer(int client) {
