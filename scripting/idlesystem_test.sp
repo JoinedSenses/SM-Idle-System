@@ -82,6 +82,7 @@ public Action cmdActivity(int client, int args) {
 	}
 	else { // console
 		ReplyToCommand(client, " Idx|  ID  |               Name               | Status | Idle Time |");
+		
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsFakeClient(i)) {
 				if (IdleSys_IsClientIdle(i)) {
