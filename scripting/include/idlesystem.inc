@@ -14,8 +14,9 @@ forward void IdleSys_OnClientIdle(int client);
  * Called when a client has ended their idle state
  *
  * @param client        Client index
+ * @param client        Client idle time in seconds
  */
-forward void IdleSys_OnClientReturn(int client);
+forward void IdleSys_OnClientReturn(int client, int time);
 
 /**
  * Returns the client idle state

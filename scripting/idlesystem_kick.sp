@@ -44,7 +44,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart() {
 	CreateConVar(
-		"sm_newplugin_version",
+		"sm_idlesystem_kick_version",
 		PLUGIN_VERSION,
 		PLUGIN_DESCRIPTION,
 		FCVAR_SPONLY|FCVAR_NOTIFY|FCVAR_DONTRECORD

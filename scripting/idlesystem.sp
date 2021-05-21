@@ -49,7 +49,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 	CreateNative("IdleSys_GetIdleTime", Native_GetIdleTime);
 
 	g_fwdOnClientIdle = new GlobalForward("IdleSys_OnClientIdle", ET_Ignore, Param_Cell);
-	g_fwdOnClientReturn = new GlobalForward("IdleSys_OnClientReturn", ET_Ignore, Param_Cell);
+	g_fwdOnClientReturn = new GlobalForward("IdleSys_OnClientReturn", ET_Ignore, Param_Cell, Param_Cell);
 }
 
 public void OnPluginStart() {
