@@ -7,7 +7,7 @@
 
 /* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.1.2"
+#define PLUGIN_VERSION "0.1.3"
 #define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
@@ -43,7 +43,7 @@ int g_iAllowedIdleTime;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) {
 	g_bLateLoad = late;
 
-	RegPluginLibrary("idlesystem");
+	RegPluginLibrary(LIBRARY_IDLESYSTEM);
 
 	CreateNative("IdleSys_IsClientIdle", Native_IsClientIdle);
 	CreateNative("IdleSys_GetIdleTime", Native_GetIdleTime);
