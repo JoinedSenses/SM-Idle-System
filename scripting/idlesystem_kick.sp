@@ -71,9 +71,7 @@ public void OnPluginStart() {
 
 	g_bEnabled = LibraryExists(LIBRARY_IDLESYSTEM);
 	if (g_bLate) {
-		if (g_bEnabled) {
-			CheckIdle();
-		}
+		CheckIdle();
 	}
 }
 
@@ -224,9 +222,11 @@ void CheckIdle() {
 
 	for (int i = 1; i <= MaxClients; ++i) {
 		if (IsClientInGame(i) && !IsClientBot(i)) {
-			g_bIdle[i] = IdleSys_IsClientIdle(i);
-
 			++g_iCount;
+
+			if (g_bEnabled) {
+				g_bIdle[i] = IdleSys_IsClientIdle(i);
+			}
 
 			if (IsClientAuthorized(i)) {
 				OnClientPostAdminCheck(i);
@@ -234,7 +234,7 @@ void CheckIdle() {
 		}
 	}
 
-	if (!g_hTimer && g_iCount >= g_iMin) {
+	if (g_bEnabled && !g_hTimer && g_iCount >= g_iMin) {
 		g_hTimer = CreateTimer(1.0, timerCheckPlayers, _, TIMER_REPEAT);
 		TriggerTimer(g_hTimer);
 	}
