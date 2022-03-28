@@ -7,7 +7,7 @@
 
 /* NOTE: Developed with only TF2 in mind */
 
-#define PLUGIN_VERSION "0.1.3"
+#define PLUGIN_VERSION "0.1.4"
 #define PLUGIN_DESCRIPTION "Simple system for keeping track of idle players."
 
 public Plugin myinfo = {
@@ -37,6 +37,8 @@ ConVar g_cvarAllowedIdleTime;
 
 // Time in seconds player allowed no input until marked as idle.
 int g_iAllowedIdleTime; 
+
+Handle g_Timer[MAXPLAYERS + 1];
 
 // ----------------------- SM Functions
 
@@ -80,7 +82,7 @@ public void OnPluginStart() {
 	if (g_bLateLoad) {
 		for (int i = 1; i <= MaxClients; ++i) {
 			if (IsClientInGame(i) && !IsClientBot(i)) {
-				CreateTimer(1.0, timerCheckClient, GetClientUserId(i), TIMER_REPEAT);
+				g_Timer[i] = CreateTimer(1.0, timerCheckClient, i, TIMER_REPEAT);
 			}
 		}
 	}
@@ -149,7 +151,10 @@ public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcas
 
 public void OnClientPutInServer(int client) {
 	if (g_bInitialConnect[client]) {
-		CreateTimer(1.0, timerCheckClient, GetClientUserId(client), TIMER_REPEAT);
+		delete g_Timer[client];
+		if (!IsFakeClient(client)) {
+			g_Timer[client] = CreateTimer(1.0, timerCheckClient, client, TIMER_REPEAT);
+		}
 		g_bInitialConnect[client] = false;
 	}
 }
@@ -167,17 +172,15 @@ public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroad
 
 	g_bIsClientIdle[client] = false;
 	g_iIdleStartTime[client] = 0;
+	delete g_Timer[client];
 }
 
 // ----------------------- Timer
 
-public Action timerCheckClient(Handle timer, int userid) {
-	int client = GetClientOfUserId(userid);
-	if (!client) {
-		return Plugin_Stop;
-	}
-
-	if (g_iIdleStartTime[client] && !g_bIsClientIdle[client]) {
+/* Usually should be passing userid, but all we really care about here is index.
+ * The timer handle should be getting removed anyways when the client disconnects. */
+public Action timerCheckClient(Handle timer, int client) {
+	if (IsClientInGame(client) && g_iIdleStartTime[client] && !g_bIsClientIdle[client]) {
 		if (GetIdleTime(client) > g_iAllowedIdleTime) {
 			SetClientIdle(client);
 		}
