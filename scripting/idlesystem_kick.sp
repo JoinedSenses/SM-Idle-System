@@ -158,6 +158,11 @@ public void IdleSys_OnClientReturn(int client, int time) {
 }
 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
+	int client = event.GetInt("index") + 1;
+
+	g_bIdle[client] = false;
+	g_bImmune[client] = false;
+
 	if (!g_bEnabled || event.GetInt("bot")) {
 		return;
 	}
@@ -171,18 +176,28 @@ public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcas
 }
 
 public void OnClientPostAdminCheck(int client) {
-	g_bImmune[client] = CheckCommandAccess(client, "sm_idlesys_kick_ignoreflag", ADMFLAG_ROOT);
+	g_bImmune[client] = CheckCommandAccess(client, "sm_idlesys_kick_ignoreflag", ADMFLAG_ROOT) || IsClientBot(client);
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
-	if (!g_bEnabled || event.GetInt("bot")) {
-		return;
-	}
-
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
-	g_bIdle[client] = false;
-	g_bImmune[client] = false;
+	if (client) {
+		g_bIdle[client] = false;
+		g_bImmune[client] = false;
+	}
+	else {
+		for (int i = 1; i <= MaxClients; ++i) {
+			if (!IsClientConnected(i)) {
+				g_bIdle[i] = false;
+				g_bImmune[i] = false;
+			}
+		}
+	}
+
+	if (event.GetInt("bot")) {
+		return;
+	}
 
 	--g_iCount;
 
@@ -221,13 +236,16 @@ void CheckIdle() {
 	g_iCount = 0;
 
 	for (int i = 1; i <= MaxClients; ++i) {
-		if (IsClientInGame(i) && !IsClientBot(i)) {
-			++g_iCount;
+		if (IsClientInGame(i)) {
+			if (!IsClientBot(i))
+			{
+				++g_iCount;
 
-			if (g_bEnabled) {
-				g_bIdle[i] = IdleSys_IsClientIdle(i);
+				if (g_bEnabled) {
+					g_bIdle[i] = IdleSys_IsClientIdle(i);
+				}
 			}
-
+			
 			if (IsClientAuthorized(i)) {
 				OnClientPostAdminCheck(i);
 			}

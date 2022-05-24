@@ -139,20 +139,18 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 // ----------------------- Events
 
 public void eventPlayerConnect(Event event, const char[] name, bool dontBroadcast) {
-	int idx = event.GetInt("index")+1;
+	int client = event.GetInt("index") + 1;
 
-	g_bIsClientIdle[idx] = false;
-	g_iIdleStartTime[idx] = 0;
+	g_bIsClientIdle[client] = false;
+	g_iIdleStartTime[client] = 0;
 
-	if (!event.GetInt("bot")) {
-		g_bInitialConnect[idx] = true;
-	}
+	g_bInitialConnect[client] = true;
 }
 
 public void OnClientPutInServer(int client) {
 	if (g_bInitialConnect[client]) {
 		delete g_Timer[client];
-		if (!IsFakeClient(client)) {
+		if (!IsClientBot(client)) {
 			g_Timer[client] = CreateTimer(1.0, timerCheckClient, client, TIMER_REPEAT);
 		}
 		g_bInitialConnect[client] = false;
@@ -160,19 +158,22 @@ public void OnClientPutInServer(int client) {
 }
 
 public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroadcast) {
-	if (event.GetBool("bot")) {
-		return;
-	}
-
 	int client = GetClientOfUserId(event.GetInt("userid"));
-
-	if (!client || IsClientBot(client)) {
-		return;
+	if (client) {
+		g_bIsClientIdle[client] = false;
+		g_iIdleStartTime[client] = 0;
+		delete g_Timer[client];
 	}
-
-	g_bIsClientIdle[client] = false;
-	g_iIdleStartTime[client] = 0;
-	delete g_Timer[client];
+	else {
+		// Sometimes the result here is 0 as the userid is no longer valid.
+		for (int i = 1; i <= MaxClients; ++i) {
+			if (!IsClientConnected(i)) {
+				g_bIsClientIdle[i] = false;
+				g_iIdleStartTime[i] = 0;
+				delete g_Timer[i];
+			}
+		}
+	}
 }
 
 // ----------------------- Timer
@@ -182,6 +183,11 @@ public void eventPlayerDisconnect(Event event, const char[] name, bool dontBroad
 public Action timerCheckClient(Handle timer, int client) {
 	if (IsClientInGame(client) && g_iIdleStartTime[client] && !g_bIsClientIdle[client]) {
 		if (GetIdleTime(client) > g_iAllowedIdleTime) {
+// 			if (IsFakeClient(client)) {
+// 				g_Timer[client] = null;
+// 				return Plugin_Stop;
+// 			}
+			
 			SetClientIdle(client);
 		}
 	}
