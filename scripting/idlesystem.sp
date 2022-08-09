@@ -47,6 +47,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 	RegPluginLibrary(LIBRARY_IDLESYSTEM);
 
+	CreateNative("IdleSys_SetClientIdle", Native_SetClientIdle);
+	CreateNative("IdleSys_SetClientReturn", Native_SetClientReturn);
+
 	CreateNative("IdleSys_IsClientIdle", Native_IsClientIdle);
 	CreateNative("IdleSys_GetIdleTime", Native_GetIdleTime);
 
@@ -223,6 +226,42 @@ bool IsClientBot(int client) {
 }
 
 // ----------------------- Natives
+
+public any Native_SetClientIdle(Handle plugin, int numParams) {
+	int client = GetNativeCell(1);
+
+	if (client < 1 || client > MaxClients) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
+	}
+
+	if (!IsClientConnected(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
+	}
+
+	if (IsClientBot(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not human", client);
+	}
+
+	return SetClientIdle(client);
+}
+
+public any Native_SetClientReturn(Handle plugin, int numParams) {
+	int client = GetNativeCell(1);
+
+	if (client < 1 || client > MaxClients) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Invalid client index (%i)", client);
+	}
+
+	if (!IsClientConnected(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not connected", client);
+	}
+
+	if (IsClientBot(client)) {
+		return ThrowNativeError(SP_ERROR_NATIVE, "Client %i is not human", client);
+	}
+
+	return SetClientReturn(client);
+}
 
 public any Native_IsClientIdle(Handle plugin, int numParams) {
 	int client = GetNativeCell(1);
