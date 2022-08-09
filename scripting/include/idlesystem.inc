@@ -3,6 +3,8 @@
 #endif
 #define _idlesystem_included_
 
+#define LIBRARY_IDLESYSTEM "idlesystem"
+
 /**
  * Called when a client has become idle
  *
@@ -17,6 +19,20 @@ forward void IdleSys_OnClientIdle(int client);
  * @param client        Client idle time in seconds
  */
 forward void IdleSys_OnClientReturn(int client, int time);
+
+/**
+ * Sets the client to be idle
+ *
+ * @param client        Client index
+ */
+native void IdleSys_SetClientIdle(int client);
+
+/**
+ * Ends the client idle state
+ *
+ * @param client        Client index
+ */
+native void IdleSys_SetClientReturn(int client);
 
 /**
  * Returns the client idle state
@@ -38,7 +54,7 @@ native int IdleSys_GetIdleTime(int client);
 
 
 public SharedPlugin __pl_idlesystem = {
-	name = "idlesystem",
+	name = LIBRARY_IDLESYSTEM,
 	file = "idlesystem.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
