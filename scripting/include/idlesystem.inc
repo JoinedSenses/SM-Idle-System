@@ -21,6 +21,20 @@ forward void IdleSys_OnClientIdle(int client);
 forward void IdleSys_OnClientReturn(int client, int time);
 
 /**
+ * Sets the client to be idle
+ *
+ * @param client        Client index
+ */
+native void IdleSys_SetClientIdle(int client);
+
+/**
+ * Ends the client idle state
+ *
+ * @param client        Client index
+ */
+native void IdleSys_SetClientReturn(int client);
+
+/**
  * Returns the client idle state
  *
  * @param client        Client index
